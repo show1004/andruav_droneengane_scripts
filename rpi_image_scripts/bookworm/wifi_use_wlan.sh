@@ -44,6 +44,9 @@ CONNECT_SUCCESS=false
 # Create a temporary passwd-file for headless secret agent workaround.
 # On headless Pis (no GNOME keyring/secret agent), nmcli cannot provide
 # stored secrets to wpa_supplicant. Using --passwd-file bypasses this.
+# The file contains one line: "802-11-wireless-security.psk=<password>"
+# It exists only for the duration of the nmcli con up command, and is
+# deleted on script exit (success, failure, or kill) via the trap below.
 PASSWD_FILE=$(mktemp)
 chmod 600 "$PASSWD_FILE"
 echo "802-11-wireless-security.psk=$PASSWORD" > "$PASSWD_FILE"
