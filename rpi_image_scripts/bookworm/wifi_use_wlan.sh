@@ -41,22 +41,30 @@ sleep 3 # Give it a moment to rescan
 echo "5. Connecting to Wi-Fi network '$SSID'..."
 CONNECT_SUCCESS=false
 
-# Try direct connect first (this both creates and activates the connection)
-if sudo nmcli dev wifi connect "$SSID" password "$PASSWORD" ifname wlan0 name "$CONNECTION_NAME"; then
-    echo "   Direct connection successful."
+# Create a temporary passwd-file for headless secret agent workaround.
+# On headless Pis (no GNOME keyring/secret agent), nmcli cannot provide
+# stored secrets to wpa_supplicant. Using --passwd-file bypasses this.
+PASSWD_FILE=$(mktemp)
+chmod 600 "$PASSWD_FILE"
+echo "802-11-wireless-security.psk=$PASSWORD" > "$PASSWD_FILE"
+trap "rm -f '$PASSWD_FILE'" EXIT
+
+# Create connection profile manually with secrets inline (works on headless)
+sudo nmcli con add type wifi ifname wlan0 con-name "$CONNECTION_NAME" ssid "$SSID" autoconnect yes \
+    802-11-wireless-security.key-mgmt wpa-psk \
+    802-11-wireless-security.psk "$PASSWORD" \
+    802-11-wireless-security.psk-flags 0 \
+    ipv4.method auto ipv6.method auto 2>/dev/null
+
+# Activate using passwd-file to bypass missing secret agent
+echo "6. Activating connection '$CONNECTION_NAME'..."
+if sudo nmcli con up "$CONNECTION_NAME" passwd-file "$PASSWD_FILE" 2>/dev/null; then
+    echo "   Connection successful."
     CONNECT_SUCCESS=true
 else
-    echo "   Direct connect failed, trying manual profile creation..."
-    # Create connection profile manually
-    sudo nmcli con add type wifi ifname wlan0 con-name "$CONNECTION_NAME" ssid "$SSID" autoconnect yes
-    sudo nmcli con modify "$CONNECTION_NAME" 802-11-wireless-security.key-mgmt wpa-psk
-    sudo nmcli con modify "$CONNECTION_NAME" 802-11-wireless-security.psk "$PASSWORD"
-    sudo nmcli con modify "$CONNECTION_NAME" 802-11-wireless-security.psk-flags 0
-    sudo nmcli con modify "$CONNECTION_NAME" ipv4.method auto ipv6.method auto
-    
-    # Now activate the manually created connection
-    echo "6. Activating connection '$CONNECTION_NAME'..."
-    if sudo nmcli con up "$CONNECTION_NAME"; then
+    echo "   Connection with passwd-file failed, trying direct connect..."
+    if sudo nmcli dev wifi connect "$SSID" password "$PASSWORD" ifname wlan0 name "$CONNECTION_NAME" passwd-file "$PASSWD_FILE"; then
+        echo "   Direct connection successful."
         CONNECT_SUCCESS=true
     fi
 fi
@@ -91,7 +99,7 @@ if [ -z "$IP_ADDR" ]; then
     echo "Attempting to restart DHCP..."
     sudo nmcli con down "$CONNECTION_NAME" &>/dev/null
     sleep 2
-    sudo nmcli con up "$CONNECTION_NAME"
+    sudo nmcli con up "$CONNECTION_NAME" passwd-file "$PASSWD_FILE"
     sleep 5
     IP_ADDR=$(sudo nmcli -g IP4.ADDRESS device show wlan0 2>/dev/null | head -n1)
     if [ -z "$IP_ADDR" ]; then
