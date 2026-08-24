@@ -142,7 +142,7 @@ fi
 echo -e "${GREEN}Found ${TARGET_CAM_NAME} at ${TARGET_DEVICE}. Starting FFmpeg pipeline...${NC}"
 
 # Build the rpicam-vid command with or without the post-processing file
-RPICAM_VID_COMMAND="${RPICAM_VID} -t 0 --vflip=1 --width ${VIDEO_WIDTH} --height ${VIDEO_HEIGHT} --framerate ${VIDEO_FRAMERATE} --codec yuv420 --info-text \"\""
+RPICAM_VID_COMMAND="${RPICAM_VID} -t 0 --nopreview --vflip=1 --width ${VIDEO_WIDTH} --height ${VIDEO_HEIGHT} --framerate ${VIDEO_FRAMERATE} --codec yuv420 --info-text \"\""
 
 if [ -n "$POSTPROCESS_FILE" ]; then
     RPICAM_VID_COMMAND="${RPICAM_VID_COMMAND} --post-process-file ${POSTPROCESS_FILE}"
