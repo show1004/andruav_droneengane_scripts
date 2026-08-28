@@ -1,17 +1,40 @@
 [Unit]
 Description=DE Communication Service Ver 1.0
-After=systemd-modules-load.service
-Documentation=https://droneengage.com  
-
+After=network.target
+Documentation=https://droneengage.com
+StartLimitIntervalSec=60
+StartLimitBurst=5
 
 [Service]
-Type=single
+Type=simple
 WorkingDirectory=/home/pi/drone_engage/de_comm
-ExecStart=/home/pi/drone_engage/de_comm/de_comm  -c /home/pi/drone_engage/de_comm/de_comm.config.module.json 
+ExecStart=/home/pi/drone_engage/de_comm/de_comm -c /home/pi/drone_engage/de_comm/de_comm.config.module.json
 Restart=on-failure
-TimeoutStopSec=5 
-RestartSec=5 
- 
+RestartSec=5s
+TimeoutStopSec=10
+
+# --- Hardening (moderate) ---
+NoNewPrivileges=true
+PrivateTmp=true
+
+# --- Note: simulator config access ---
+# When running with simulators, this service reads configs from:
+#   /home/pi/simulator/sim_de_mavlink_instances/
+# That directory is world-readable (755). If enabling ProtectSystem or
+# running as a dedicated user, ensure read access is preserved.
+
+# --- Future: migrate to dedicated droneengage system user ---
+#   1. sudo useradd -r -s /usr/sbin/nologin droneengage
+#   2. chown -R droneengage:droneengage /home/pi/drone_engage/de_comm/
+# Then uncomment:
+# User=droneengage
+# Group=droneengage
+#
+# --- Future: full filesystem hardening ---
+# ProtectSystem=strict
+# ReadWritePaths=/home/pi/drone_engage/de_comm/
+# RestrictSUIDSGID=true
+# ProtectHome=read-only
+
 [Install]
 WantedBy=multi-user.target
-

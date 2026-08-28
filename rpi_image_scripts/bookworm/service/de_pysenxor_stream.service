@@ -2,22 +2,42 @@
 Description=Drone Engage Camera with Initialization of rpicamera-vid & thermal if exists pipeline Ver 2.1
 After=network.target multi-user.target
 Documentation=https://droneengage.com
-
+StartLimitIntervalSec=60
+StartLimitBurst=5
 
 [Service]
 Type=simple
 WorkingDirectory=/home/pi/
 ExecStart=/home/pi/scripts/wrapper/camera_manager_wrapper -c -e "/home/pi/scripts/sh_camera_senxor_thermal_run_on_vc.sh"
 Restart=on-failure
-RestartSec=5s # Wait 5 seconds before attempting a restart
+RestartSec=5s
+TimeoutStopSec=10
 
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=camera_wrapper
 
-# You might need to adjust user/group if camera access is restricted
-# User=pi
+# --- Hardening (moderate) ---
+NoNewPrivileges=true
+PrivateTmp=true
+
+# --- Future: migrate to dedicated droneengage system user ---
+# This is the only service currently running as pi:video.
+# To standardize with a dedicated user:
+#   1. sudo useradd -r -s /usr/sbin/nologin droneengage
+#   2. sudo usermod -aG video,render droneengage
+#   3. Ensure droneengage can read /home/pi/scripts/
+# Then replace the lines below with:
+# User=droneengage
 # Group=video
+User=pi
+Group=video
+
+# --- Future: full filesystem hardening ---
+# ProtectSystem=strict
+# ReadWritePaths=/home/pi/
+# RestrictSUIDSGID=true
+# ProtectHome=read-only
 
 [Install]
 WantedBy=multi-user.target

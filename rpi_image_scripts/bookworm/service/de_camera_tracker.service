@@ -2,19 +2,39 @@
 Description=Drone Engage Camera withOUT RPI-Camera Ver 2.0
 After=network.target multi-user.target
 Documentation=https://droneengage.com
-
+StartLimitIntervalSec=60
+StartLimitBurst=5
 
 [Service]
 Type=simple
 WorkingDirectory=/home/pi/scripts/wrapper
-ExecStart=/home/pi/scripts/wrapper/camera_manager_wrapper -c -t 
+ExecStart=/home/pi/scripts/wrapper/camera_manager_wrapper -c -t
 Restart=on-failure
 RestartSec=5s
+TimeoutStopSec=10
 
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=camera_wrapper
 
+# --- Hardening (moderate) ---
+NoNewPrivileges=true
+PrivateTmp=true
+
+# --- Future: migrate to dedicated droneengage system user ---
+# To run as a dedicated user instead of root:
+#   1. sudo useradd -r -s /usr/sbin/nologin droneengage
+#   2. sudo usermod -aG video,render droneengage
+#   3. Ensure droneengage can read /home/pi/scripts/
+# Then uncomment:
+# User=droneengage
+# Group=video
+#
+# --- Future: full filesystem hardening ---
+# ProtectSystem=strict
+# ReadWritePaths=/home/pi/scripts/wrapper
+# RestrictSUIDSGID=true
+# ProtectHome=read-only
+
 [Install]
 WantedBy=multi-user.target
-

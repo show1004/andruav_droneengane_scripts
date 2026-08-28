@@ -1,17 +1,41 @@
 [Unit]
- Description=DE Mavlink Service Ver 1.0
- After=network.target
- Documentation=https://droneengage.com
- 
+Description=DE Mavlink Service Ver 1.0
+After=network.target
+Documentation=https://droneengage.com
+StartLimitIntervalSec=60
+StartLimitBurst=5
 
+[Service]
+Type=simple
+WorkingDirectory=/home/pi/drone_engage/de_mavlink
+ExecStart=/home/pi/drone_engage/de_mavlink/de_ardupilot -c /home/pi/drone_engage/de_mavlink/de_mavlink.config.module.json
+Restart=on-failure
+RestartSec=5s
+TimeoutStopSec=10
 
- [Service]
- Type=single
- WorkingDirectory=/home/pi/drone_engage/de_mavlink
- ExecStart=/home/pi/drone_engage/de_mavlink/de_ardupilot  -c /home/pi/drone_engage/de_mavlink/de_mavlink.config.module.json
- Restart=on-failure
- TimeoutStopSec=5
+# --- Hardening (moderate) ---
+NoNewPrivileges=true
+PrivateTmp=true
 
- [Install]
- WantedBy=multi-user.target
+# --- Note: simulator config access ---
+# When running with simulators, this service reads configs from:
+#   /home/pi/simulator/sim_de_mavlink_instances/
+# That directory is world-readable (755). If enabling ProtectSystem or
+# running as a dedicated user, ensure read access is preserved.
 
+# --- Future: migrate to dedicated droneengage system user ---
+#   1. sudo useradd -r -s /usr/sbin/nologin droneengage
+#   2. sudo usermod -aG dialout droneengage  (for serial/UART access)
+#   3. chown -R droneengage:droneengage /home/pi/drone_engage/de_mavlink/
+# Then uncomment:
+# User=droneengage
+# Group=droneengage
+#
+# --- Future: full filesystem hardening ---
+# ProtectSystem=strict
+# ReadWritePaths=/home/pi/drone_engage/de_mavlink/
+# RestrictSUIDSGID=true
+# ProtectHome=read-only
+
+[Install]
+WantedBy=multi-user.target
