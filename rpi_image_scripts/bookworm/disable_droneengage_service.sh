@@ -43,8 +43,6 @@ echo -e "${BLUE} - de_communicator.service${NC}"
 echo -e "${BLUE} - de_mavlink.service${NC}"
 echo -e "${BLUE} - de_camera.service${NC}"
 echo -e "${YELLOW}These services are related to the Drone Engine system.${NC}"
-echo -e "${YELLOW}You will be prompted for your sudo password to execute these commands.${NC}"
-echo -e "${YELLOW}Please ensure you have the necessary permissions to disable these services.${NC}"
 
 #Stop the services that are already running.
 echo -e "${YELLOW}Stopping services that are currently running...${NC}"

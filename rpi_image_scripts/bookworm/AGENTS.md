@@ -86,11 +86,55 @@ And hold the kernel package: `sudo apt-mark hold raspberrypi-kernel`.
 
 ## Service Control
 
+### Core Services (de_communicator, de_mavlink, de_camera)
+
+- `de_service_control.sh {enable|restart|stop|disable}` — Wrapper that
+  dispatches collective DroneEngage service actions.
 - `enable_and_restart_services.sh` — Enables and starts all DroneEngage
-  systemd services.
+  systemd services (unmasks first).
 - `disable_droneengage_service.sh` — Stops and disables all services.
 - `restart_droneengage_services.sh` — Restarts all services.
-- `stop_droneengage_services.sh` — Stops all services.
+- `stop_droneengage_services.sh` — Stops all services (autostart unchanged).
+
+### RPI Camera (`de_camera_*`)
+
+- `de_cam_control.sh {<camera_service>|restart|stop|disable}` — Wrapper
+  that dispatches RPI camera actions. Enabling a mode stops and disables
+  any other camera mode first (only one can run at a time).
+- `enable_and_restart_rpi_cam.sh [service]` — Enables and starts one
+  camera mode, disabling conflicting modes first.
+- `restart_rpi_cam.sh` — Restarts the currently active camera mode
+  (autostart unchanged).
+- `stop_rpi_cam_only.sh` — Stops all camera modes (autostart unchanged,
+  resume on reboot).
+- `stop_rpi_cam.sh` — Stops and disables all camera modes.
+
+### Sound (`de_snd`)
+
+- `de_snd_control.sh {enable|restart|stop|disable}` — Wrapper that
+  dispatches de_snd actions.
+- `enable_and_restart_de_snd.sh` — Enables and starts de_snd.
+- `restart_de_snd.sh` — Restarts de_snd (autostart unchanged).
+- `stop_de_snd.sh` — Stops de_snd (autostart unchanged, resume on reboot).
+- `disable_de_snd.sh` — Stops and disables de_snd.
+
+### Telnet (`de_telnet`)
+
+- `de_telnet_control.sh {enable|restart|stop|disable}` — Wrapper that
+  dispatches de_telnet actions. WARNING: de_telnet exposes a remote
+  terminal on the DroneEngage bus — restrict access via `allowed_users`
+  in the config file.
+- `enable_and_restart_de_telnet.sh` — Enables and starts de_telnet.
+- `restart_de_telnet.sh` — Restarts de_telnet (autostart unchanged).
+- `stop_de_telnet.sh` — Stops de_telnet (autostart unchanged, resume on
+  reboot).
+- `disable_de_telnet.sh` — Stops and disables de_telnet.
+
+### MAVLink Config Helper
+
+- `de_mavlink_config_helper.py` — Python helper used by the Cockpit
+  `de_plugin_mavlink_configurator` to read/write de_mavlink FCB
+  connection and MAVLink ID settings.
 
 ## Simulators
 

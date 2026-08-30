@@ -1,0 +1,27 @@
+[Unit]
+Description=DE Telnet Module Service Ver 1.0.1
+After=network.target de_communicator.service
+Documentation=https://droneengage.com
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=simple
+WorkingDirectory=/home/pi/drone_engage/de_telnet
+ExecStart=/home/pi/drone_engage/de_telnet/de_telnet -c /home/pi/drone_engage/de_telnet/de_telnet.config.module.json
+Restart=on-failure
+RestartSec=5s
+TimeoutStopSec=10
+
+# --- Hardening (moderate) ---
+NoNewPrivileges=true
+PrivateTmp=true
+
+# --- Telnet access ---
+# WARNING: This module exposes a remote terminal (telnet) on the DroneEngage bus.
+# Only enable if you understand the security implications. Restrict access via
+# the 'allowed_users' field in de_telnet.config.module.json and ensure the
+# DroneEngage channel is secured.
+
+[Install]
+WantedBy=multi-user.target
